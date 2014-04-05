@@ -26,14 +26,31 @@ void setup() {
 
 	InitializeLEDs();
 
-	CurrentLEDSettings[0] = 255;
+	/*CurrentLEDSettings[0] = 255;
 	CurrentLEDSettings[1] = 0;
 	CurrentLEDSettings[2] = 0;
-	CurrentLEDSettings[3] = 255;
+	CurrentLEDSettings[3] = 64;
+	SetLEDColor(0, CurrentLEDSettings);
+
+	CurrentLEDSettings[0] = 0;
+	CurrentLEDSettings[1] = 255;
+	CurrentLEDSettings[2] = 0;
+	CurrentLEDSettings[3] = 64;
+	SetLEDColor(1, CurrentLEDSettings);
+
+	CurrentLEDSettings[0] = 0;
+	CurrentLEDSettings[1] = 0;
+	CurrentLEDSettings[2] = 255;
+	CurrentLEDSettings[3] = 64;
+	SetLEDColor(2, CurrentLEDSettings);*/
+
+	
+
+	//WriteLEDArray();
 }
 
 void InitializeLEDs() {
-	int Current = 1; //Full = 127, Half = 64;
+	int Current = 127; //Full = 127, Half = 64;
 	SB_CommandMode = B01; // Write to current control registers
 	SB_RedCommand = Current;
 	SB_GreenCommand = Current;
@@ -70,6 +87,18 @@ void WriteLEDArray() {
 }
 
 void loop() {
+	if (ct++ == 255) {
+		ct = 0;
+	}
+	int Dimmer = ((float)ct / 255.0) * 1023;
+
+	SetLEDColor(0, Dimmer, 0, 0);
+	SetLEDColor(1, 0, Dimmer, 0);
+	SetLEDColor(2, 0, 0, Dimmer);
+	WriteLEDArray();
+	delay(30);
+
+	return;
 	// every 10 loops make sure the LEDs are initialized
 	if (ct++ == 10) {
 		ct = 0; // reset to keep from overflowing
@@ -77,38 +106,43 @@ void loop() {
 	}
 
 	//DoColorWipe();
+	int Settings[4] = { 0, 0 , 0, 255 };
 
 	for (int i = 0; i < NumLEDs; i++) {
 		// fade in red
 		for (int j = 0; j < 1024; j += 32) {
-			LEDChannels[i][0] = j;
-			LEDChannels[i][2] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			Settings[0] = j;
+			//Settings[2] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			SetLEDColor(i, Settings);
 			WriteLEDArray();
 			delay(30);
 		}
 		// fade in green
 		for (int j = 0; j < 1024; j += 32) {
-			LEDChannels[i][1] = j;
-			LEDChannels[i][0] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			Settings[1] = j;
+			//Settings[0] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			SetLEDColor(i, Settings);
 			WriteLEDArray();
 			delay(30);
 		}
 		// fade in blue
 		for (int j = 0; j < 1024; j += 32) {
-			LEDChannels[i][2] = j;
-			LEDChannels[i][1] = constrain(LEDChannels[i][1] - j, 0, 1023);
+			Settings[2] = j;
+			//Settings[1] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			SetLEDColor(i, Settings);
 			WriteLEDArray();
 			delay(30);
 		}
 	}
 
+	
 	for (int i = 0; i < NumLEDs; i++) {
 		for (int j = 0; j < 3; j++) {
 			LEDChannels[i][j] = 0;
 		}
 	}
 	WriteLEDArray();
-
+	
 	// Change the colors
 	//CurrentLEDSettings[0] = (CurrentLEDSettings[0] + 8) % 255;
 	//CurrentLEDSettings[1] = (CurrentLEDSettings[1] + 16) % 255;
