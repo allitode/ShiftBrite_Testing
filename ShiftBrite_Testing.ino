@@ -8,7 +8,7 @@ int SB_BlueCommand;
 int SB_RedCommand;
 int SB_GreenCommand;
 
-const int NumLEDs = 2;
+const int NumLEDs = 3;
 int ct = 0;
 int CurrentLED = 0;
 int CurrentLEDSettings[4]; // Red, Green, Blue, Dimmer
@@ -33,7 +33,7 @@ void setup() {
 }
 
 void InitializeLEDs() {
-	int Current = 127; //Full = 127, Half = 64;
+	int Current = 1; //Full = 127, Half = 64;
 	SB_CommandMode = B01; // Write to current control registers
 	SB_RedCommand = Current;
 	SB_GreenCommand = Current;
@@ -70,35 +70,55 @@ void WriteLEDArray() {
 }
 
 void loop() {
-	String function = "ColorWipe";
-
 	// every 10 loops make sure the LEDs are initialized
 	if (ct++ == 10) {
 		ct = 0; // reset to keep from overflowing
 		InitializeLEDs();
 	}
 
-	DoColorWipe();
+	//DoColorWipe();
+
+	for (int i = 0; i < NumLEDs; i++) {
+		// fade in red
+		for (int j = 0; j < 1024; j += 32) {
+			LEDChannels[i][0] = j;
+			LEDChannels[i][2] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			WriteLEDArray();
+			delay(30);
+		}
+		// fade in green
+		for (int j = 0; j < 1024; j += 32) {
+			LEDChannels[i][1] = j;
+			LEDChannels[i][0] = constrain(LEDChannels[i][0] - j, 0, 1023);
+			WriteLEDArray();
+			delay(30);
+		}
+		// fade in blue
+		for (int j = 0; j < 1024; j += 32) {
+			LEDChannels[i][2] = j;
+			LEDChannels[i][1] = constrain(LEDChannels[i][1] - j, 0, 1023);
+			WriteLEDArray();
+			delay(30);
+		}
+	}
+
+	for (int i = 0; i < NumLEDs; i++) {
+		for (int j = 0; j < 3; j++) {
+			LEDChannels[i][j] = 0;
+		}
+	}
+	WriteLEDArray();
 
 	// Change the colors
-	CurrentLEDSettings[0] = (CurrentLEDSettings[0] + 8) % 255;
-	CurrentLEDSettings[1] = (CurrentLEDSettings[1] + 16) % 255;
-	CurrentLEDSettings[2] = (CurrentLEDSettings[2] + 32) % 255;
-	/*
-	switch (function) {
-	case "ColorWipe":
-	//DoColorWipe();
-	break;
-	default:
-	// who knows
-	}
-	*/
+	//CurrentLEDSettings[0] = (CurrentLEDSettings[0] + 8) % 255;
+	//CurrentLEDSettings[1] = (CurrentLEDSettings[1] + 16) % 255;
+	//CurrentLEDSettings[2] = (CurrentLEDSettings[2] + 32) % 255;
 }
 
 void DoColorWipe() {
 	CurrentLED = (CurrentLED++) % NumLEDs;
 	SetLEDColor(CurrentLED, CurrentLEDSettings);
-	delay(10);
+	WriteLEDArray();
 }
 
 void SetLEDColor(int ID, int Settings[]) {
