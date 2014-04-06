@@ -10,10 +10,9 @@ int SB_GreenCommand;
 
 const int NumLEDs = 3;
 int ct = 0;
-int CurrentLED = 0;
-int CurrentLEDSettings[4]; // Red, Green, Blue, Dimmer
 
-int LEDChannels[NumLEDs][3] = { 0 };
+int CurrentScene[NumLEDs][3] = { 0 };
+int NextScene[NumLEDs][3] = { 0 };
 
 void setup() {
 	pinMode(datapin, OUTPUT);
@@ -30,125 +29,113 @@ void setup() {
 	// Start out at 25% red
 	int Settings[4] = { 255, 0, 0, 64 };
 	for (int i = 0; i < NumLEDs; i++) {
-		SetLEDColor(i, Settings);
+		SetCurrentSceneLEDSettings(i, Settings);
 	}
-
-	/*CurrentLEDSettings[0] = 255;
-	CurrentLEDSettings[1] = 0;
-	CurrentLEDSettings[2] = 0;
-	CurrentLEDSettings[3] = 64;
-	SetLEDColor(0, CurrentLEDSettings);
-
-	CurrentLEDSettings[0] = 0;
-	CurrentLEDSettings[1] = 255;
-	CurrentLEDSettings[2] = 0;
-	CurrentLEDSettings[3] = 64;
-	SetLEDColor(1, CurrentLEDSettings);
-
-	CurrentLEDSettings[0] = 0;
-	CurrentLEDSettings[1] = 0;
-	CurrentLEDSettings[2] = 255;
-	CurrentLEDSettings[3] = 64;
-	SetLEDColor(2, CurrentLEDSettings);*/
-
-	
-
-	//WriteLEDArray();
 }
 
 void loop() {
-	int DimSettings[4] = { 1023, 0, 0, 128 };
-	int FollowerSettings[4] = { 1023, 0, 0, 512 };
-	int CurrentSettings[4] = { 1023, 0, 0, 1023 };
+	int StartSettings[4] = { 1023, 0, 0, 128 };
+	int EndSettings[4] = { 0, 1023, 0, 128 };
 
-	if (ct++ == NumLEDs) {
-		ct = 0;
-		InitializeLEDs();
-	}
-
+	// Start Out
 	for (int i = 0; i < NumLEDs; i++) {
-		SetLEDColor(i, DimSettings);
+		SetCurrentSceneLEDSettings(i, StartSettings);
 	}
-
-	SetLEDColor(ct, CurrentSettings);
 	WriteLEDArray();
-	delay(100);
+
+	delay(2000);
+
+	for (int i = 0; i < NumLEDs; i++)
+	{
+		SetNextSceneLEDSettings(i, EndSettings);
+	}
 	
+	FadeToNextScene(20, 30);
+	delay(2000);
+
+	for (int i = 0; i < NumLEDs; i++)
+	{
+		SetNextSceneLEDSettings(i, StartSettings);
+	}
+	
+	FadeToNextScene(20, 30);
+	delay(1000);
+
 	return;
-	// every 10 loops make sure the LEDs are initialized
-	if (ct++ == 10) {
-		ct = 0; // reset to keep from overflowing
-		InitializeLEDs();
-	}
-
-	//DoColorWipe();
-	int Settings[4] = { 0, 0 , 0, 255 };
-
-	for (int i = 0; i < NumLEDs; i++) {
-		// fade in red
-		for (int j = 0; j < 1024; j += 32) {
-			Settings[0] = j;
-			//Settings[2] = constrain(LEDChannels[i][0] - j, 0, 1023);
-			SetLEDColor(i, Settings);
-			WriteLEDArray();
-			delay(30);
-		}
-		// fade in green
-		for (int j = 0; j < 1024; j += 32) {
-			Settings[1] = j;
-			//Settings[0] = constrain(LEDChannels[i][0] - j, 0, 1023);
-			SetLEDColor(i, Settings);
-			WriteLEDArray();
-			delay(30);
-		}
-		// fade in blue
-		for (int j = 0; j < 1024; j += 32) {
-			Settings[2] = j;
-			//Settings[1] = constrain(LEDChannels[i][0] - j, 0, 1023);
-			SetLEDColor(i, Settings);
-			WriteLEDArray();
-			delay(30);
-		}
-	}
-
-	
-	for (int i = 0; i < NumLEDs; i++) {
-		for (int j = 0; j < 3; j++) {
-			LEDChannels[i][j] = 0;
-		}
-	}
-	WriteLEDArray();
-	
-	// Change the colors
-	//CurrentLEDSettings[0] = (CurrentLEDSettings[0] + 8) % 255;
-	//CurrentLEDSettings[1] = (CurrentLEDSettings[1] + 16) % 255;
-	//CurrentLEDSettings[2] = (CurrentLEDSettings[2] + 32) % 255;
 }
 
-void DoColorWipe() {
-	CurrentLED = (CurrentLED++) % NumLEDs;
-	SetLEDColor(CurrentLED, CurrentLEDSettings);
-	WriteLEDArray();
+void FadeToNextScene(int Steps, int Wait) {
+	float Deltas[NumLEDs][3];
+
+	int StartScene[NumLEDs][3];
+	for (int i = 0; i < NumLEDs; i++){
+		for (int j = 0; j < 3; j++)
+		{
+			StartScene[i][j] = CurrentScene[i][j];
+		}
+	}
+	
+	// Get deltas and speed
+	for (int i = 0; i < NumLEDs; i++) {
+		Deltas[i][0] = ((float)CurrentScene[i][0] - (float)NextScene[i][0]) / (float)Steps;
+		Deltas[i][1] = ((float)CurrentScene[i][1] - (float)NextScene[i][1]) / (float)Steps;
+		Deltas[i][2] = ((float)CurrentScene[i][2] - (float)NextScene[i][2]) / (float)Steps;
+	}
+
+	for (int i = 0; i < Steps; i++) {
+		for (int j = 0; j < NumLEDs; j++)
+		{
+			SetCurrentSceneLEDColor(j, StartScene[j][0] + (Deltas[j][0] * i), StartScene[j][1] + (Deltas[j][1] * i), StartScene[j][2] + (Deltas[j][2] * i));
+		}
+		WriteLEDArray();
+		delay(Wait);
+	}
 }
 
-void SetLEDColor(int ID, int Settings[]) {
+void SetCurrentSceneLEDSettings(int ID, int Settings[]) {
 	int Red, Green, Blue;
 	float Dimmer;
-	//Dimmer = ((float)Settings[3] / 255.0) * 1023;
 	Dimmer = (float)Settings[3] / 1023.0;
 	Red = Settings[0] * Dimmer;
 	Green = Settings[1] * Dimmer;
 	Blue = Settings[2] * Dimmer;
 
-	SetLEDColor(ID, Red, Green, Blue);
+	SetCurrentSceneLEDColor(ID, Red, Green, Blue);
 }
 
-void SetLEDColor(int ID, int Red, int Green, int Blue) {
-	LEDChannels[ID][0] = Red;
-	LEDChannels[ID][1] = Green;
-	LEDChannels[ID][2] = Blue;
+void SetCurrentSceneLEDColor(int ID, int Red, int Green, int Blue) {
+	CurrentScene[ID][0] = Red;
+	CurrentScene[ID][1] = Green;
+	CurrentScene[ID][2] = Blue;
 }
 
+void SetNextSceneLEDSettings(int ID, int Settings[]) {
+	int Red, Green, Blue;
+	float Dimmer;
+	Dimmer = (float)Settings[3] / 1023.0;
+	Red = Settings[0] * Dimmer;
+	Green = Settings[1] * Dimmer;
+	Blue = Settings[2] * Dimmer;
+
+	SetNextSceneLEDColor(ID, Red, Green, Blue);
+}
+
+void SetNextSceneLEDColor(int ID, int Red, int Green, int Blue) {
+	NextScene[ID][0] = Red;
+	NextScene[ID][1] = Green;
+	NextScene[ID][2] = Blue;
+}
+
+
+
+
+
+
+
+
+
+
+// -- DON'T MESS WITH THESE FOR A LONG WHILE
 void InitializeLEDs() {
 	int Current = 127; //Full = 127, Half = 64;
 	SB_CommandMode = B01; // Write to current control registers
@@ -174,9 +161,9 @@ void WriteLEDArray() {
 	SB_CommandMode = B00; // Write to PWM control registers
 
 	for (int i = 0; i < NumLEDs; i++) {
-		SB_RedCommand = LEDChannels[i][0];
-		SB_GreenCommand = LEDChannels[i][1];
-		SB_BlueCommand = LEDChannels[i][2];
+		SB_RedCommand = CurrentScene[i][0];
+		SB_GreenCommand = CurrentScene[i][1];
+		SB_BlueCommand = CurrentScene[i][2];
 		SB_SendPacket();
 	}
 

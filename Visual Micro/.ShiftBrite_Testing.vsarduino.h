@@ -41,9 +41,11 @@ extern "C" void __cxa_pure_virtual() {;}
 
 //
 //
-void DoColorWipe();
-void SetLEDColor(int ID, int Settings[]);
-void SetLEDColor(int ID, int Red, int Green, int Blue);
+void FadeToNextScene(int Steps, int Wait);
+void SetCurrentSceneLEDSettings(int ID, int Settings[]);
+void SetCurrentSceneLEDColor(int ID, int Red, int Green, int Blue);
+void SetNextSceneLEDSettings(int ID, int Settings[]);
+void SetNextSceneLEDColor(int ID, int Red, int Green, int Blue);
 void InitializeLEDs();
 void SB_SendPacket();
 void WriteLEDArray();
