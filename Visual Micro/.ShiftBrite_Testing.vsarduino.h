@@ -41,6 +41,8 @@ extern "C" void __cxa_pure_virtual() {;}
 
 //
 //
+void ChaserSetup();
+void ChaserLoop();
 void FadeToNextScene(int Steps, int Wait);
 void SetCurrentSceneLEDSettings(int ID, int Settings[]);
 void SetCurrentSceneLEDColor(int ID, int Red, int Green, int Blue);

@@ -29,6 +29,14 @@ void setup() {
 	InitializeLEDs();
 
 	// Start Out
+	ChaserSetup();
+}
+
+void loop() {
+	ChaserLoop();
+}
+
+void ChaserSetup() {
 	/// We're going to need a setup for each function then a loop for each function
 	/// This is the Chaser setup function
 	for (int i = 0; i < NumLEDs; i++) {
@@ -38,7 +46,7 @@ void setup() {
 	WriteLEDArray();
 }
 
-void loop() {
+void ChaserLoop() {
 	/// This is the Chaser loop function
 	for (int i = 0; i < NumLEDs; i++) {
 		SetNextSceneLEDSettings(i, BrightSettings);
@@ -47,7 +55,6 @@ void loop() {
 			SetNextSceneLEDSettings(j, DimSettings);
 		}
 	}
-	return;
 }
 
 void FadeToNextScene(int Steps, int Wait) {
