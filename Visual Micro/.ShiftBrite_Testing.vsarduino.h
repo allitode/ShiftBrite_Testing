@@ -40,13 +40,13 @@ typedef unsigned char byte;
 extern "C" void __cxa_pure_virtual() {;}
 
 //
-void InitializeLEDs();
-void SB_SendPacket();
-void WriteLEDArray();
 //
 void DoColorWipe();
 void SetLEDColor(int ID, int Settings[]);
 void SetLEDColor(int ID, int Red, int Green, int Blue);
+void InitializeLEDs();
+void SB_SendPacket();
+void WriteLEDArray();
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\leonardo\pins_arduino.h" 

@@ -26,6 +26,13 @@ void setup() {
 
 	InitializeLEDs();
 
+	
+	// Start out at 25% red
+	int Settings[4] = { 255, 0, 0, 64 };
+	for (int i = 0; i < NumLEDs; i++) {
+		SetLEDColor(i, Settings);
+	}
+
 	/*CurrentLEDSettings[0] = 255;
 	CurrentLEDSettings[1] = 0;
 	CurrentLEDSettings[2] = 0;
@@ -49,55 +56,24 @@ void setup() {
 	//WriteLEDArray();
 }
 
-void InitializeLEDs() {
-	int Current = 127; //Full = 127, Half = 64;
-	SB_CommandMode = B01; // Write to current control registers
-	SB_RedCommand = Current;
-	SB_GreenCommand = Current;
-	SB_BlueCommand = Current;
-	SB_SendPacket();
-}
+void loop() {
+	int DimSettings[4] = { 1023, 0, 0, 128 };
+	int FollowerSettings[4] = { 1023, 0, 0, 512 };
+	int CurrentSettings[4] = { 1023, 0, 0, 1023 };
 
-void SB_SendPacket() {
-	SB_CommandPacket = SB_CommandMode & B11;
-	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_BlueCommand & 1023);
-	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_RedCommand & 1023);
-	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_GreenCommand & 1023);
-
-	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 24);
-	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 16);
-	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 8);
-	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket);
-}
-
-void WriteLEDArray() {
-	SB_CommandMode = B00; // Write to PWM control registers
+	if (ct++ == NumLEDs) {
+		ct = 0;
+		InitializeLEDs();
+	}
 
 	for (int i = 0; i < NumLEDs; i++) {
-		SB_RedCommand = LEDChannels[i][0];
-		SB_GreenCommand = LEDChannels[i][1];
-		SB_BlueCommand = LEDChannels[i][2];
-		SB_SendPacket();
+		SetLEDColor(i, DimSettings);
 	}
 
-	delay(1); // adjustment may be necessary depending on chain length
-	digitalWrite(latchpin, HIGH); // latch data into registers
-	delay(1); // adjustment may be necessary depending on chain length
-	digitalWrite(latchpin, LOW);
-}
-
-void loop() {
-	if (ct++ == 255) {
-		ct = 0;
-	}
-	int Dimmer = ((float)ct / 255.0) * 1023;
-
-	SetLEDColor(0, Dimmer, 0, 0);
-	SetLEDColor(1, 0, Dimmer, 0);
-	SetLEDColor(2, 0, 0, Dimmer);
+	SetLEDColor(ct, CurrentSettings);
 	WriteLEDArray();
-	delay(30);
-
+	delay(100);
+	
 	return;
 	// every 10 loops make sure the LEDs are initialized
 	if (ct++ == 10) {
@@ -156,8 +132,10 @@ void DoColorWipe() {
 }
 
 void SetLEDColor(int ID, int Settings[]) {
-	int Red, Green, Blue, Dimmer;
-	Dimmer = ((float)Settings[3] / 255.0) * 1023;
+	int Red, Green, Blue;
+	float Dimmer;
+	//Dimmer = ((float)Settings[3] / 255.0) * 1023;
+	Dimmer = (float)Settings[3] / 1023.0;
 	Red = Settings[0] * Dimmer;
 	Green = Settings[1] * Dimmer;
 	Blue = Settings[2] * Dimmer;
@@ -169,4 +147,41 @@ void SetLEDColor(int ID, int Red, int Green, int Blue) {
 	LEDChannels[ID][0] = Red;
 	LEDChannels[ID][1] = Green;
 	LEDChannels[ID][2] = Blue;
+}
+
+void InitializeLEDs() {
+	int Current = 127; //Full = 127, Half = 64;
+	SB_CommandMode = B01; // Write to current control registers
+	SB_RedCommand = Current;
+	SB_GreenCommand = Current;
+	SB_BlueCommand = Current;
+	SB_SendPacket();
+}
+
+void SB_SendPacket() {
+	SB_CommandPacket = SB_CommandMode & B11;
+	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_BlueCommand & 1023);
+	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_RedCommand & 1023);
+	SB_CommandPacket = (SB_CommandPacket << 10) | (SB_GreenCommand & 1023);
+
+	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 24);
+	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 16);
+	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket >> 8);
+	shiftOut(datapin, clockpin, MSBFIRST, SB_CommandPacket);
+}
+
+void WriteLEDArray() {
+	SB_CommandMode = B00; // Write to PWM control registers
+
+	for (int i = 0; i < NumLEDs; i++) {
+		SB_RedCommand = LEDChannels[i][0];
+		SB_GreenCommand = LEDChannels[i][1];
+		SB_BlueCommand = LEDChannels[i][2];
+		SB_SendPacket();
+	}
+
+	delay(1); // adjustment may be necessary depending on chain length
+	digitalWrite(latchpin, HIGH); // latch data into registers
+	delay(1); // adjustment may be necessary depending on chain length
+	digitalWrite(latchpin, LOW);
 }
