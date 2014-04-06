@@ -65,7 +65,7 @@ void loop() {
 }
 
 void FadeToNextScene(int Steps, int Wait) {
-	float Deltas[NumLEDs][3];
+	float Deltas[NumLEDs][3] = { 0.0 };
 
 	int StartScene[NumLEDs][3];
 	for (int i = 0; i < NumLEDs; i++){
@@ -74,15 +74,15 @@ void FadeToNextScene(int Steps, int Wait) {
 			StartScene[i][j] = CurrentScene[i][j];
 		}
 	}
-	
+
 	// Get deltas and speed
 	for (int i = 0; i < NumLEDs; i++) {
-		Deltas[i][0] = ((float)CurrentScene[i][0] - (float)NextScene[i][0]) / (float)Steps;
-		Deltas[i][1] = ((float)CurrentScene[i][1] - (float)NextScene[i][1]) / (float)Steps;
-		Deltas[i][2] = ((float)CurrentScene[i][2] - (float)NextScene[i][2]) / (float)Steps;
+		Deltas[i][0] = ((float)NextScene[i][0] - (float)CurrentScene[i][0]) / (float)Steps;
+		Deltas[i][1] = ((float)NextScene[i][1] - (float)CurrentScene[i][1]) / (float)Steps;
+		Deltas[i][2] = ((float)NextScene[i][2] - (float)CurrentScene[i][2]) / (float)Steps;
 	}
 
-	for (int i = 0; i < Steps; i++) {
+	for (int i = 0; i <= Steps; i++) {
 		for (int j = 0; j < NumLEDs; j++)
 		{
 			SetCurrentSceneLEDColor(j, StartScene[j][0] + (Deltas[j][0] * i), StartScene[j][1] + (Deltas[j][1] * i), StartScene[j][2] + (Deltas[j][2] * i));
