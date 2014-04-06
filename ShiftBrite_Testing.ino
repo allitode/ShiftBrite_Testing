@@ -14,6 +14,9 @@ int ct = 0;
 int CurrentScene[NumLEDs][3] = { 0 };
 int NextScene[NumLEDs][3] = { 0 };
 
+int DimSettings[4] = { 1023, 0, 0, 128 };
+int BrightSettings[4] = { 1023, 0, 0, 1023 };
+
 void setup() {
 	pinMode(datapin, OUTPUT);
 	pinMode(latchpin, OUTPUT);
@@ -25,42 +28,25 @@ void setup() {
 
 	InitializeLEDs();
 
-	
-	// Start out at 25% red
-	int Settings[4] = { 255, 0, 0, 64 };
+	// Start Out
+	/// We're going to need a setup for each function then a loop for each function
+	/// This is the Chaser setup function
 	for (int i = 0; i < NumLEDs; i++) {
-		SetCurrentSceneLEDSettings(i, Settings);
+		SetCurrentSceneLEDSettings(i, DimSettings);
+		SetNextSceneLEDSettings(i, DimSettings); // don't forget to set the default for the next scene
 	}
+	WriteLEDArray();
 }
 
 void loop() {
-	int StartSettings[4] = { 1023, 0, 0, 128 };
-	int EndSettings[4] = { 0, 1023, 0, 128 };
-
-	// Start Out
+	/// This is the Chaser loop function
 	for (int i = 0; i < NumLEDs; i++) {
-		SetCurrentSceneLEDSettings(i, StartSettings);
+		SetNextSceneLEDSettings(i, BrightSettings);
+		FadeToNextScene(20, 30);
+		for (int j = 0; j < NumLEDs; j++) {
+			SetNextSceneLEDSettings(j, DimSettings);
+		}
 	}
-	WriteLEDArray();
-
-	delay(2000);
-
-	for (int i = 0; i < NumLEDs; i++)
-	{
-		SetNextSceneLEDSettings(i, EndSettings);
-	}
-	
-	FadeToNextScene(20, 30);
-	delay(2000);
-
-	for (int i = 0; i < NumLEDs; i++)
-	{
-		SetNextSceneLEDSettings(i, StartSettings);
-	}
-	
-	FadeToNextScene(20, 30);
-	delay(1000);
-
 	return;
 }
 
