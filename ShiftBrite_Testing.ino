@@ -37,6 +37,12 @@ void setup() {
 }
 
 void loop() {
+	ct++;
+	if (ct == NumLEDs) {
+		ct = 0;
+		InitializeLEDs(); // this needs to be called periodically to ensure the LEDs have the correct settings
+	}
+
 	//ChaserLoop();
 	CylonLoop();
 }
