@@ -8,14 +8,17 @@ int SB_BlueCommand;
 int SB_RedCommand;
 int SB_GreenCommand;
 
-const int NumLEDs = 3;
+const int NumLEDs = 4;
 int ct = 0;
 
 int CurrentScene[NumLEDs][3] = { 0 };
 int NextScene[NumLEDs][3] = { 0 };
 
 int DimSettings[4] = { 1023, 0, 0, 128 };
-int BrightSettings[4] = { 1023, 0, 0, 1023 };
+int BrightSettings[4] = { 1023, 0, 0, 512 };
+int Multiplier = 1;
+int CurrentLED = 1;
+
 
 void setup() {
 	pinMode(datapin, OUTPUT);
@@ -29,11 +32,13 @@ void setup() {
 	InitializeLEDs();
 
 	// Start Out
-	ChaserSetup();
+	//ChaserSetup();
+	CylonSetup();
 }
 
 void loop() {
-	ChaserLoop();
+	//ChaserLoop();
+	CylonLoop();
 }
 
 void ChaserSetup() {
@@ -55,6 +60,24 @@ void ChaserLoop() {
 			SetNextSceneLEDSettings(j, DimSettings);
 		}
 	}
+}
+
+void CylonSetup() {
+	Multiplier = 1;
+	CurrentLED = 1;
+
+	ChaserSetup();
+}
+
+void CylonLoop() {
+	SetNextSceneLEDSettings(CurrentLED, BrightSettings);
+	FadeToNextScene(20, 30);
+	for (int j = 0; j < NumLEDs; j++) {
+		SetNextSceneLEDSettings(j, DimSettings);
+	}
+	if (CurrentLED == 0 || CurrentLED == NumLEDs - 1)
+		Multiplier *= -1;
+	CurrentLED += Multiplier;
 }
 
 void FadeToNextScene(int Steps, int Wait) {
