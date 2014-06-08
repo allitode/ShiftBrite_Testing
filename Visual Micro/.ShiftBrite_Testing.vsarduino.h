@@ -41,6 +41,8 @@ extern "C" void __cxa_pure_virtual() {;}
 
 //
 //
+void colorWipe(uint32_t c, uint8_t wait);
+uint32_t Color(byte r, byte g, byte b);
 void ChaserSetup();
 void ChaserLoop();
 void CylonSetup();
@@ -50,8 +52,6 @@ void SetCurrentSceneLEDSettings(int ID, int Settings[]);
 void SetCurrentSceneLEDColor(int ID, int Red, int Green, int Blue);
 void SetNextSceneLEDSettings(int ID, int Settings[]);
 void SetNextSceneLEDColor(int ID, int Red, int Green, int Blue);
-void InitializeLEDs();
-void SB_SendPacket();
 void WriteLEDArray();
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
