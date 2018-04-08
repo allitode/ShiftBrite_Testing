@@ -14,8 +14,8 @@ int ct = 0;
 int CurrentScene[NumLEDs][3] = { 0 };
 int NextScene[NumLEDs][3] = { 0 };
 
-int DimSettings[4] = { 1023, 0, 0, 128 };
-int BrightSettings[4] = { 1023, 0, 0, 512 };
+int DimSettings[4] = { 1023, 0, 512, 128 };
+int BrightSettings[4] = { 1023, 0, 512, 512 };
 int Multiplier = 1;
 int CurrentLED = 1;
 
